@@ -97,6 +97,7 @@ plt.show()
 
 
 #coding exercise 7: adding randomness to current to plot membrane potential graph
+#random synaptic input current leads to random time course for membrane potential
 
 np.random.seed(2020)
 
@@ -111,7 +112,7 @@ plt.ylabel("Membrane Potential (V)")
 for step in range(step_end):
 
     t = step * dt
-    
+
     #generating a random number between -1 and 1 
     #since np.random.random() generates a random number between 0 and 1 (uses the uniform distribution), we need to multiply by 2 and subtract by 1 to get max and min values of -1 and 1.
     random_num = 2 * np.random.random() - 1

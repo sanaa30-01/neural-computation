@@ -252,3 +252,70 @@ for step in range(step_end):
 
 plt.show()
 
+#Coding exercise 11: rewriting with numpy
+
+np.random.seed(2020)
+
+#creating a time range from 0 to t_max with step size dt
+step_end = int(t_max/dt) - 1
+
+#creating an array of time points from 0 to t_max with step_end size and t_max as the endpoint (not including t_max)
+#linspace is a function that creates an array of evenly spaced numbers over a specified interval
+t_range = np.linspace(0, t_max, num=step_end, endpoint=False)
+
+#ones is a function that creates an array of all ones of a specified size
+#mutliplied by el to create an array of the neuron's resting voltage (el) for all time points
+v = el * np.ones(step_end)
+
+#creating an array of random numbers between -1 and 1 for all time points instead of just one random number for each time point
+random_num = 2 * np.random.random(size=step_end) - 1
+#creating an array of input currents for all time points
+i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+#using a loop to iterate over each time point
+for step in range(step_end):
+
+    #using indexing to access the previous time point's voltage and present current to calculate the new voltage
+    #storing it in the array v at the current time point step
+    v[step] = v[step - 1] + dt/tau * (el - v[step - 1] + r * i[step])
+
+with plt.xkcd():
+    plt.figure()
+    plt.title("Membrane Potential with Numpy")
+    plt.xlabel("Time (s)")
+    plt.ylabel(f"Membrane Potential (V)")
+
+    plt.plot(t_range, v, color = 'k', marker = '.')
+
+    plt.show()
+
+#Coding exercise 12: using enumerate and indexing
+#aim: use enumerting for the synaptic current input --> get the index of the current and the value
+
+np.random.seed(2020)
+
+step_end = int(t_max/dt) - 1
+t_range = np.linspace(0, t_max, num=step_end, endpoint=False)
+v = el * np.ones(step_end)
+
+random_num = 2 * np.random.random(size=step_end) - 1
+i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+for step, i_step in enumerate(i):
+
+    if step == 0:
+        continue
+
+    v[step] = v[step - 1] + dt/tau * (el - v[step - 1] + r * i_step)
+
+with plt. xkcd():
+    plt.figure()
+    plt.title("Membrane Potential with Enumeration")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Membrane Potential (V)")
+
+    plt.plot(t_range, v, color = 'k')
+
+    plt.show()
+
+

@@ -124,3 +124,131 @@ for step in range(step_end):
     plt.plot(t, v, color = 'k', marker = '.')
 
 plt.show()
+
+
+#coding exercise 8: storing simulations in lists
+
+#plotting multiple simulations (N=50) by storing in a list the voltage of each neuron at time t
+
+np.random.seed(2020)
+
+step_end = int(t_max/dt)
+
+#initializing the number of neurons
+n = 50
+
+#like the previous exercises, we are intializing rest (V(0)) voltage as the leak potential term of the neuron
+#in this case, we are using a list comprehension to initialize the voltage of ALL 50 neurons to the leak potential term
+v_n = [el] * n
+
+#using the xkcd style for the plot because it looks like a hand-drawn graph 
+with plt.xkcd():
+    plt.figure()
+    plt.title("Membrane Potential of 50 neurons (random input)")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Membrane Potential (V)")
+
+    for step in range(step_end):
+
+        t = step * dt
+
+        #using a loop to iterate over each neuron and calculate the voltage of each neuron at time t
+        #iterates over indices of v_n list
+        for j in range(0, n):
+
+            random_num = 2 * np.random.random() - 1
+            i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+            #saving the new voltage of the neuron in the list, for that particular neuron --> jth neuron by indexing j
+            #basically same formula as previous exercises but with iterations using the list comprehension
+            v_n[j] = v_n[j] + dt/tau * (el - v_n[j] + r * i)
+
+        #plotting the voltage of all neurons at time t
+        #[t] * n is a list of n elements all equal to t, all the x-values are the same time t but the y-values are the voltages of all neurons at that time t
+        #this allows us to plot all the neurons at the same time t on the same vertical line --> shows different realizations of the random voltages of all neurons at that time t
+        #the random element in this is the current input, but the number of neurons changes
+        plt.plot([t] * n, v_n, color = 'k', alpha = 0.1, marker = '.')
+
+    plt.show()
+
+
+#coding exercise 9: plotting sample mean
+
+np.random.seed(2020)
+
+step_end = int(t_max/dt)
+n = 50
+
+v_n = [el] * n
+
+plt.figure()
+plt.title("Random Membrane Potential with Sample Mean")
+plt.xlabel("Time (s)")
+plt.ylabel("Membrane Potential (V)")
+
+for step in range(step_end):
+    t = step * dt
+    
+    for j in range(0, n):
+
+        random_num = 2 * np.random.random() - 1
+        i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+        v_n[j] = v_n[j] + dt/tau * (el - v_n[j] + r * i)
+
+    #calculating the sample mean of the voltages of all neurons at time t
+    #basically the average of the voltages of all neurons for each time step t
+    v_mean = sum(v_n) / n
+
+    plt.plot([t] * n, v_n, color = 'k', alpha = 0.1, marker = '.')
+
+    #plotting the sample mean of the voltages of all neurons at time t
+    plt.plot(t, v_mean, color = 'C0', marker = '.')
+
+plt.show()
+
+#coding exercise 10: plotting sample standard deviation 
+
+np.random.seed(2020)
+
+step_end = int(t_max/dt)
+n = 50
+
+v_n = [el] * n
+
+plt.figure()
+plt.title(f"Membrane Potential with Sample Mean and Standard Deviation")
+plt.xlabel("Time (s)")
+plt.ylabel("Membrane Potential (V)")
+
+for step in range(step_end):
+
+    t = step * dt
+
+    for j in range(0, n):
+
+        random_num = 2 * np.random.random() - 1
+        i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+        v_n[j] = v_n[j] + dt/tau * (el - v_n[j] + r * i)
+
+    v_mean = sum(v_n) / n
+
+    #calculating the sample variance of the voltages of all neurons at time t
+    #basically the variance of the voltages of all neurons for each time step t
+    v_var_n = [(v - v_mean) ** 2 for v in v_n]    #used a list comprehension 
+    v_var = sum(v_var_n) / (n-1)
+
+    #calculating the sample standard deviation of the voltages of all neurons at time t
+    #basically the standard deviation of the voltages of all neurons for each time step t
+    v_std = np.sqrt(v_var)
+
+    plt.plot([t] * n, v_n, color = 'k', alpha = 0.1, marker = '.')
+
+    plt.plot(t, v_mean, color = 'C0', alpha = 0.8, marker = '.', markersize = 10)
+
+    #plotting the sample standard deviation of the voltages of all neurons at time t --> upper and lower bounds 
+    plt.plot(t, v_mean + v_std, color = 'C7', alpha = 0.8, marker = '.')
+    plt.plot(t, v_mean - v_std, color = 'C7', alpha = 0.8, marker = '.')
+
+plt.show()
+

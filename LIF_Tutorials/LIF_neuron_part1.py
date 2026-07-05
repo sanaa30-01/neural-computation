@@ -319,3 +319,78 @@ with plt. xkcd():
     plt.show()
 
 
+#Coding exercise 13: using 2D arrays
+
+np.random.seed(2020)
+
+step_end = int(t_max/dt)
+n = 50
+t_range = np.linspace(0, t_max, num=step_end)
+
+#creating a 2D array of the neuron's resting voltage for all neurons at all time points
+#shape of the array is n neurons and step_end time points 
+v_n = el * np.ones([n, step_end])
+
+#creating a 2D array of random numbers for all neurons at all time points instead of just one random number for each neuron at each time point
+random_num = 2 * np.random.random(size=[n, step_end]) - 1
+i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+#using a loop to iterate over each time point
+#starting from 1 because we need to access the previous time point's voltage to calculate the new voltage
+for step in range(1, step_end):
+
+    v_n[:, step] = v_n[:, step - 1] + dt/tau * (el - v_n[:, step - 1] + r * i[:, step])
+
+with plt.xkcd():
+    plt.figure()
+    plt.title("Membrane Potential of 50 neurons with 2D arrays")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Membrane Potential (V)")
+    
+    #plotting the voltage of all neurons at all time points
+    #using 2D arrays to plot the trajectories of all neurons as time progresses
+    #T is the transpose of the array, so each column is one neuron's full time series and that allows for the trajectory of each neuron to be plotted 
+    #transpose is required because the array is in the shape of n neurons and step_end time points, so we need to transpose it to plot all neurons at the same time point on the same vertical line
+    plt.plot(t_range, v_n.T, color = 'k', alpha = 0.3)
+
+    plt.show()
+
+
+#coding exercise 14: plotting sample mean and standard deviation using 2D arrays
+
+np.random.seed(2020)
+
+step_end = int(t_max/dt)
+n = 50
+t_range = np.linspace(0, t_max, num=step_end)
+v_n = el * np.ones([n, step_end])
+
+random_num = 2 * np.random.random(size=[n, step_end]) - 1
+i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+for step in range(1, step_end):
+
+    v_n[:, step] = v_n[:, step - 1] + dt/tau * (el - v_n[:, step - 1] + r * i[:, step])
+
+#calculating the sample mean of the voltages of all neurons at all time points
+#axs = 0 is used because we want to calculate the average of the voltages of all neurons at each time point (time points are the columns)
+v_mean = np.mean(v_n, axis = 0)
+
+#calculating the sample standard deviation of the voltages of all neurons at all time points
+#axs = 0 is used because we want to calculate the standard deviation of the voltages of all neurons at each time point (time points are the columns)
+v_std = np.std(v_n, axis = 0)
+
+with plt.xkcd():
+    plt.figure()
+    plt.title("Membrane Potential with Sample Mean and Standard Deviation using 2D arrays")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Membrane Potential (V)")
+
+    plt.plot(t_range, v_n.T, color = 'k', alpha = 0.3)
+
+    plt.plot(t_range, v_n[-1], color = 'k', alpha = 0.3, label = 'V(t)')
+    plt.plot(t_range, v_mean, color = 'C0', alpha = 0.8, label = 'mean')
+    plt.plot(t_range, v_mean + v_std, color = 'C7', alpha = 0.8)
+    plt.plot(t_range, v_mean - v_std, color = 'C7', alpha = 0.8)
+
+    plt.show()

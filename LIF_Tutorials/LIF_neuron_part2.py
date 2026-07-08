@@ -253,3 +253,35 @@ spikes_mean = spikes_n/n
 
 # Plot multiple realizations of Vm, spikes and mean spike rate
 plot_all(t_range, v_n, spikes=spikes, spikes_mean=spikes_mean)
+
+
+#coding exercise 4: making a binary raster plot
+#aim: binary raster plot represents spike times as 1s in a binary grid initialized to 0s 
+
+np.random.seed(2020)
+
+t_range = np.arange(0, t_max, dt)
+step_end = len(t_range)
+n = 500
+v_n = el * np.ones([n, step_end])
+
+random_num = 2 * np.random.random(size=[n, step_end]) - 1
+i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+#intializing the raster array --> will be used to store the binary raster plot
+raster = np.zeros([n, step_end])
+
+for step, t in enumerate(t_range):
+    if step == 0:
+        continue
+
+    v_n[:, step] = v_n[:, step - 1] + (dt/tau) * (el - v_n[:, step - 1] + r * i[:, step])
+
+    spiked = v_n[:, step] >= vth
+    v_n[spiked, step] = vr 
+    #setting the raster array to 1 for the neurons that have spiked
+    #removed the loop using np.where to avoid needing 2 arrays --> raster and spiked
+    raster[spiked, step] = 1    # --> raster[spiked, step] = 1 is equivalent to raster[np.where(spiked)[0], step] = 1
+
+plot_all(t_range, v_n, raster=raster)
+

@@ -285,3 +285,46 @@ for step, t in enumerate(t_range):
 
 plot_all(t_range, v_n, raster=raster)
 
+
+#coding exercise 5: investigating refractory periods
+
+np.random.seed(2020)
+
+t_range = np.arange(0, t_max, dt)
+step_end = len(t_range)
+n = 500
+v_n = el * np.ones([n, step_end])
+
+random_num = 2 * np.random.random(size=[n, step_end]) - 1
+i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+raster = np.zeros([n, step_end])
+
+#initializing the refractory period as 10 ms --> this is the time after a spike that the neuron cannot spike again
+t_ref = 0.01
+
+#initializing the last spike time as -t_ref --> this is the time of the latest spike for each neuron
+#at the beginning, no neuron has spiked yet --> we still need a value for every neuron --> used -t_ref to avoid making neurons already start in refractory period
+#pretending the last spike was exactly one refractory period before t = 0
+last_spike = -t_ref * np.ones([n])
+
+for step, t in enumerate(t_range):
+    if step == 0:
+        continue
+
+    v_n[:, step] = v_n[:, step - 1] + (dt/tau) * (el - v_n[:, step - 1] + r * i[:, step])
+
+    spiked = v_n[:, step] >= vth
+    v_n[spiked, step] = vr
+    raster[spiked, step] = 1
+
+    #clamping the voltage of the neurons in refractory period so that they cannot spike again
+    #t - last_spike is the time since the last spike --> if it is less than t_ref, the neuron is in refractory period
+    clamped = (t - last_spike < t_ref)
+    #setting the voltage of the neurons in refractory period to the resting potential
+    v_n[clamped, step] = vr
+
+    #updating the last spike time for the neurons that are spiking now --> t is the current time step
+    last_spike[spiked] = t
+
+plot_all(t_range, v_n, raster=raster)

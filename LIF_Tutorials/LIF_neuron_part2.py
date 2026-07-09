@@ -431,3 +431,86 @@ plt.tight_layout()
 
 plt.show()
 
+
+
+#coding exercise 7: using classes
+#implement LIF Neuron class that evolves and keeps state of multiple realizations 
+
+class LIFNeurons:
+    """
+    Keeps track of membrane potential for multiple realizations of LIF neuron,
+    and performs single step discrete time integration
+    """
+
+    #initializing the LIF Neurons class
+    def __init__(self, n, t_ref_mu = 0.01, t_ref_sigma = 0.002, tau = 20e-3, el = -60e-3, vr = -70e-3, vth = -50e-3, r = 100e6):
+
+        #number of neurons
+        self.n = n
+
+        #neuron parameters
+        self.tau = tau
+        self.el = el
+        self.vr = vr
+        self.vth = vth
+        self.r = r
+
+        #refractory period parameters
+        self.t_ref_mu = t_ref_mu
+        self.t_ref_sigma = t_ref_sigma
+        self.t_ref = self.t_ref_mu + self.t_ref_sigma * np.random.normal(size=self.n)
+        self.t_ref[self.t_ref<0] = 0
+
+        #stating variables
+        #initializing the membrane potential for each neuron to the resting potential
+        self.v = self.el * np.ones(self.n)
+        self.spiked = self.v >= self.vth
+        self.last_spike = -self.t_ref * np.ones([self.n])
+        self.t = 0
+        self.steps = 0
+    
+    def ode_step(self, dt, i):
+
+        #evolving the membrane potential by one step of discrete time integration
+        self.t += dt 
+        self.steps += 1
+
+        self.v = self.v + dt/self.tau * (self.el - self.v + self.r * i)
+
+        self.spiked = self.v >= self.vth 
+        self.v[self.spiked] = self.vr
+        self.last_spike[self.spiked] = t
+
+        clamped = (self.t - self.last_spike < self.t_ref)
+        self.v[clamped] = self.vr
+
+        self.last_spike[self.spiked] = self.t
+
+np.random.seed(2020)
+
+t_range = np.arange(0, t_max, dt)
+step_end = len(t_range)
+n = 500
+v_n = el * np.ones([n, step_end])
+
+random_num = 2 * np.random.random(size=[n, step_end]) - 1
+i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+raster = np.zeros([n, step_end])
+
+#calling the LIFNeurons class
+neurons = LIFNeurons(n)
+
+for step, t in enumerate(t_range):
+
+    #calling the ode_step method to evolve the membrane potential and check for spikes --> spiked + clamp arrays are updated in the method
+    neurons.ode_step(dt, i[:, step])
+
+    #updating the membrane potential for each neuron
+    v_n[:, step] = neurons.v
+    raster[neurons.spiked, step] = 1
+
+
+print(f'Ran for {neurons.t:.3}s in {neurons.steps} steps.')
+
+plot_all(t_range, v_n, raster=raster)

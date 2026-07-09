@@ -328,3 +328,106 @@ for step, t in enumerate(t_range):
     last_spike[spiked] = t
 
 plot_all(t_range, v_n, raster=raster)
+
+
+#coding exercise 6: rewriting code with functions
+#also includes random refractory periods
+
+#general function to evolve the membrane potential by one step of discrete time integration --> will take inputs later
+def ode_step(v, i, dt):
+    """
+    Evolves membrane potential by one stpe of discrete time integration.
+
+    Args:
+    v (numpy array of floats)
+        Membrane potential values at previous time step of shape (neurons)
+
+    i (numpy array of floats)
+        Input current values at current time stepof shape (neurons)
+
+    dt (float)
+        Time step size/increment
+
+    Returns:
+    v (numpy array of floats)
+        Membrane potential values at current time step of shape (neurons)
+        """
+    
+    v = v + dt/tau * (el - v + r * i)
+    return v
+
+#general function to handle spiking and refractory periods --> will take inputs later
+#delta_spike is the interval of time since the last spike and will be used to determine if the neuron is in refractory period
+def spike_clamp(v, delta_spike):
+    """
+    Resets membrane potential of neurons if v >= vth 
+    and clamps to vr if interval of time since last spike < t_ref
+
+    Args:
+    v (numpy array of floats)
+        Membrane potential of shape (neurons)
+
+    delta_spike (float)
+        Interval of time since last spike of shape (neurons)
+
+    Returns:
+    v (numpy array of floats)
+        Membrane potential values of shape (neurons)
+    spiked (numpy array of floats)
+        Boolean array of neurons that spiked of shape (neurons)
+    """
+
+    #checking if the neuron has spiked
+    spiked = (v >= vth)
+    #resetting the voltage of the neurons that have spiked to the resting potential
+    v[spiked] = vr 
+
+    #checking if the neuron is in refractory period
+    clamped = (delta_spike < t_ref)
+    #clamping the voltage of the neurons that are in refractory period to the resting potential
+    v[clamped] = vr
+
+    return v, spiked
+
+
+np.random.seed(2020)
+
+t_range = np.arange(0, t_max, dt)
+step_end = len(t_range)
+n = 500
+v_n = el * np.ones([n, step_end])
+
+random_num = 2 * np.random.random(size=[n, step_end]) - 1
+i = i_mean * (1 + 0.1 * (t_max/dt) ** 0.5 * random_num)
+
+raster = np.zeros([n, step_end])
+
+#initializing the refractory period as a random normal distribution with mean mu and standard deviation sigma
+mu = 0.01
+sigma = 0.007
+t_ref = mu + sigma * np.random.normal(size=n)
+#setting any negative refractory periods to 0
+t_ref[t_ref<0] = 0
+last_spike = -t_ref * np.ones([n])
+
+for step, t in enumerate(t_range):
+    if step == 0:
+        continue
+
+    v_n[:, step] = ode_step(v_n[:, step - 1], i[:, step], dt)
+    
+    v_n[:, step], spiked = spike_clamp(v_n[:, step], t - last_spike)
+
+    raster[spiked, step] = 1
+    last_spike[spiked] = t
+
+plot_all(t_range, v_n, raster=raster)
+
+plt.figure(figsize=(8,4))
+plt.hist(t_ref, bins=32, histtype='stepfilled', linewidth=0, color='C1')
+plt.xlabel(r'$t_{ref}$ (s)')
+plt.ylabel('count')
+plt.tight_layout()
+
+plt.show()
+

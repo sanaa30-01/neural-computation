@@ -105,3 +105,52 @@ with plt.xkcd():
     plt.show()
 
 
+#firing rate as a function of input
+
+def Exact_Integrate_and_Fire(I, t):
+    """
+    Args:
+        I  : Input Current
+        t : time
+    Returns:
+        Spike : Spike Count
+        Spike_time : Spike time
+        V_exact : Exact membrane potential
+    """
+    Spike = 0
+    tau_m = 10
+    R = 10
+    t_isi = 0
+    V_reset = E_L = -75
+    V_exact = V_reset * np.ones(len(t))
+    V_th = -50
+    Spike_time = []
+
+    for i in range(0, len(t)):
+        V_exact[i] = E_L + R * I + (V_reset - E_L - R * I) * np.exp(-(t[i] - t_isi) / tau_m)
+
+        # Threshold Reset
+        if V_exact[i] > V_th:
+            #setting the previous voltage to 0 and resetting the voltage to the reset potential 
+            #previous voltage is set to 0 because it is the last voltage before the spike
+            V_exact[i - 1] = 0
+            V_exact[i] = V_reset
+            t_isi = t[i]
+            Spike = Spike + 1
+            Spike_time = np.append(Spike_time, t[i])
+
+    return Spike, Spike_time, V_exact
+
+
+I_range = np.arange(2.0, 4.0, 0.1)
+Spike_rate = np.ones(len(I_range))
+
+for i, I in enumerate(I_range):
+  Spike_rate[i], _, _ = Exact_Integrate_and_Fire(I, t)
+
+with plt.xkcd():
+  fig = plt.figure(figsize=(6, 4))
+  plt.plot(I_range,Spike_rate)
+  plt.xlabel('Input Current (nA)')
+  plt.ylabel('Spikes per Second (Hz)')
+  plt.show()
